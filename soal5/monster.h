@@ -1,8 +1,12 @@
 #include <iostream>
 #include <pthread.h>
 #include <unistd.h>
+#include <termios.h>
 #include <stdlib.h>
 #include <string>
+#include <sys/shm.h>
+#include <sys/ipc.h>
+
 
 using namespace std;
 
@@ -11,6 +15,9 @@ enum {
     BATTLE_STAT,
     SHOP_STAT
 };
+
+typedef int Enemy;
+typedef int* MarketStock;
 
 class Monster {
     private:
@@ -21,9 +28,11 @@ class Monster {
             foodStock;
         const int damage = 20;
         int bath_isNotReady;
+        Enemy enemy;
+        MarketStock marketStock;
         
 
-        pthread_t tid[5];
+        pthread_t tid[6];
         
         // fungsi untuk threads
         static void* display(void*);
@@ -31,7 +40,9 @@ class Monster {
         static void* bathCoolDown(void*);
         static void* kelaparan(void*);
         static void* hygieneDecrease(void*);
+        static void* listenKeypress(void*);
         
+
         
 
     public:
@@ -42,6 +53,14 @@ class Monster {
         void standby();
         void battle();
         void shop();
+
+
+        void eat();
+        void bath();
+        void bathCooldown();
+
+        void attack();
+        void buy();
 
         // setter getter
         void addHealth(int);
