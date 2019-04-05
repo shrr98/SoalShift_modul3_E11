@@ -15,6 +15,7 @@ void* faktorial(void* x){
         fakt*=o;
     }
     number->faktorial = fakt;
+    return NULL;
 }
 
 void sort(Pair* number, int n){
