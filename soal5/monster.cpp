@@ -2,9 +2,9 @@
 
 Monster::Monster(string nama){
         this->name = nama;
-        hygiene_stat=100;
-        hunger_stat=200;
-        health_stat=300;
+        hygiene_stat=5;
+        hunger_stat=10;
+        health_stat=5;
         bath_isNotReady = 0;
         status = 0;
         isLiving = true;
@@ -124,7 +124,7 @@ void* Monster::listenKeypress(void *x){
     static struct termios old, new1;
     int echo =0;
 
-    while(m->isLiving){
+    while(1){
         tcgetattr(0, &old); /* grab old terminal i/o settings */
         new1 = old; /* make new settings same as old settings */
         new1.c_lflag &= ~ICANON; /* disable buffered i/o */
@@ -140,7 +140,8 @@ void* Monster::listenKeypress(void *x){
 
         if(!m->isLiving){
             if(key=='1'){
-                m->isRunning=false;
+                m->msg = "Game Over:Lack of Health\n";
+                m->isRunning = false;
                 break;
             }
             continue;
@@ -270,6 +271,7 @@ void Monster::attack(){
     health_stat-=damage;
     if(health_stat<=0){
         printf("YOU LOSE...\n");
+        isLiving = false;
         sleep(1);
         status = STANDBY_STAT;
         return;
@@ -288,6 +290,7 @@ void Monster::buy(){
 
 void Monster::addHealth(int x){
     health_stat+=x;
+    health_stat<0? health_stat=0 : 0;
 }
 
 int Monster::getHealth(){
@@ -296,6 +299,7 @@ int Monster::getHealth(){
 
 void Monster::addHunger(int x){
     hunger_stat+=x;
+    hunger_stat<0? hunger_stat=0 : 0;
 }
 
 int Monster::getHunger(){
@@ -304,6 +308,7 @@ int Monster::getHunger(){
 
 void Monster::addHygiene(int x){
     hygiene_stat+=x;
+    hygiene_stat<0? hygiene_stat=0 : 0;
 }
 
 int Monster::getHygiene(){
