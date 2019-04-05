@@ -125,16 +125,10 @@ int main(int argc, char **argv){
 <ol>
   <li>
     <p align="justify">
-      Buatlah sebuah program C dimana dapat menyimpan list proses yang sedang berjalan (ps -aux) maksimal 10 list proses. Maka pertama-tama buat directory tujuan yaitu /home/[user]/Documents/FolderProses1 dan /home/[user]/Documents/FolderProses2. Berarti menggunakan ps -aux yang di pipe ke head disimpan pada SimpanProses1.txt pada folder FolderProses1 dan SimpanProses2.txt pada folder FolderProses2
     </p>
     
 ```c
-system("mkdir /home/arifdarma/Documents/FolderProses1");
-system("ps -aux | head > /home/arifdarma/Documents/FolderProses1/SimpanProses1.txt");
 
-pada thread yang lain buat
-system("mkdir /home/arifdarma/Documents/FolderProses2");
-system("ps -aux | head > /home/arifdarma/Documents/FolderProses1/SimpanProses2.txt");
 ```
 
   </li>
@@ -179,21 +173,47 @@ system("ps -aux | head > /home/arifdarma/Documents/FolderProses1/SimpanProses2.t
 <ol>
   <li>
     <p align="justify">
+      Buatlah sebuah program C dimana dapat menyimpan list proses yang sedang berjalan (ps -aux) maksimal 10 list proses. Maka pertama-tama buat directory tujuan yaitu /home/[user]/Documents/FolderProses1 dan /home/[user]/Documents/FolderProses2. Berarti menggunakan ps -aux yang di pipe ke head disimpan pada SimpanProses1.txt pada folder FolderProses1 dan SimpanProses2.txt pada folder FolderProses2
     </p>
     
 ```c
+system("mkdir /home/arifdarma/Documents/FolderProses1");
+system("ps -aux | head > /home/arifdarma/Documents/FolderProses1/SimpanProses1.txt");
 
+pada thread yang lain buat :
+
+system("mkdir /home/arifdarma/Documents/FolderProses2");
+system("ps -aux | head > /home/arifdarma/Documents/FolderProses1/SimpanProses2.txt");
 ```
 
   </li>
     <li>
     <p align="justify">
+      Setelah itu masing2 file di  kompres zip dengan format nama file KompresProses1.zip dan KompresProses2.zip dan file SimpanProses1.txt dan SimpanProses2.txt akan otomatis terhapus
     </p>
     
 ```c
+system("zip -jm /home/arifdarma/Documents/FolderProses1/KompresProses1.zip /home/arifdarma/Documents/FolderProses1/SimpanProses1.txt");
 
+pada thread yang lain buat juga :
+
+system("zip -jm /home/arifdarma/Documents/FolderProses2/KompresProses2.zip /home/arifdarma/Documents/FolderProses2/SimpanProses2.txt");
 ```
 
+  </li>
+    <li>
+  <p align="justify">
+  Setelah file di zip, program akan menunggu selama 15 detik dan setelah 15 detik file di unzip
+  </p>
+
+```c
+ sleep(15);
+ system("unzip /home/arifdarma/Documents/FolderProses1/KompresProses1.zip -d /home/arifdarma/Documents/FolderProses1/");
+ 
+ Dan pada thread lain :
+ sleep(15);
+ system("unzip /home/arifdarma/Documents/FolderProses2/KompresProses2.zip -d /home/arifdarma/Documents/FolderProses2/");
+```
   </li>
 </ol>
 
