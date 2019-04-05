@@ -265,6 +265,182 @@ void* printStock(void* x){
   </li>
 </ol>
 
+<h5>Server Pembeli</h5>
+<ol>
+  <li>
+    <p align="justify">Menggunakan shared memory sebagai IPC dengan server penjual. Inisialisasi shared memory dilakukan pada fungsi main. Kemudian jalankan server.
+    </p>
+    
+```c
+
+int main(int argc, char const *argv[]) 
+{ 
+ 
+
+    key_t key = ftok("stok",65); 
+  
+    // shmget returns an identifier in shmid 
+    shmid = shmget(key,1024,0666|IPC_CREAT); 
+  
+    server();
+       
+   
+    return 0; 
+} 
+
+```
+
+  </li>
+    <li>
+    <p align="justify">
+	    Membuat fungsi server untuk koneksi ke socket sebagai IPC dengan client. Setiap ada query/message dari client, panggil fungsi 'beli' untuk melakukan proses penjualan.
+    </p>
+    
+```c
+
+void server(){
+    int server_fd, client, valread; 
+    struct sockaddr_in address; 
+    int opt = 1; 
+    int addrlen = sizeof(address); 
+    char buffer[5] = {0}; 
+    char *respon[] = {"transaksi gagal", "transaksi berhasil"}; 
+
+     // Creating socket file descriptor 
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
+    { 
+        perror("socket failed"); 
+        exit(EXIT_FAILURE); 
+    } 
+       
+    // Forcefully attaching socket to the port 8080 
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, 
+                                                  &opt, sizeof(opt))) 
+    { 
+        perror("setsockopt"); 
+        exit(EXIT_FAILURE); 
+    } 
+    address.sin_family = AF_INET; 
+    address.sin_addr.s_addr = INADDR_ANY; 
+    address.sin_port = htons( PORT ); 
+       
+    // Forcefully attaching socket to the port 8080 
+    if (bind(server_fd, (struct sockaddr *)&address,  
+                                 sizeof(address))<0) 
+    { 
+        perror("bind failed"); 
+        exit(EXIT_FAILURE); 
+    } 
+    while(1){
+        if (listen(server_fd, 1) < 0) 
+        { 
+            perror("listen"); 
+            exit(EXIT_FAILURE); 
+        } 
+        if ((client = accept(server_fd, (struct sockaddr *)&address,  
+                        (socklen_t*)&addrlen))<0) 
+        { 
+            perror("accept"); 
+            exit(EXIT_FAILURE); 
+        } 
+        valread = read( client , buffer, 5);
+        int sukses = beli(buffer);
+        send(client , respon[sukses] , strlen(respon[sukses]) , 0 ); 
+        printf("%s\n", respon[sukses]); 
+    }
+}
+
+```
+
+  </li>
+  <li>
+    <p align="justify">
+	    Membuat fungsi beli untuk melakukan transaksi pembelian. Jika query yang diterima adalah "beli", maka attach ke shared memory untuk mengubah jumlah stock yang tersimpan pada shared memory. Fungsi beli akan mengembalikan nilai 1 jika transaksi berhasil, yaitu jika stock masih tersedia.
+    </p>
+    
+```c
+
+int beli(char *buffer){
+    if( (strcmp(buffer, "beli"))==0 ){
+        int *shared_mem = (int*) shmat(shmid,(void*)0,0); 
+
+        // change stok
+        if(shared_mem != NULL && *shared_mem>0){
+            *shared_mem = (*shared_mem) -1;
+            shmdt(shared_mem); 
+            return 1;
+        }
+    }
+    return 0;
+}
+
+```
+
+  </li>
+</ol>
+
+<h5>Client</h5>
+<ol>
+  <li>
+    <p align="justify">
+	    Client mengirimkan query yang diperoleh dari stdin. Jika query adalah 'tambah', maka client akan terkoneksi ke server penjual (PORT_J). Jika query adalah 'beli', maka client akan terkoneksi ke server pembeli (PORT_B). Jika query tidak valid, maka continue (ignored).
+    </p>
+    
+```c
+
+scanf("%s", query);
+if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+{ 
+    printf("\n Socket creation error \n"); 
+    return -1; 
+} 
+
+memset(&serv_addr, '0', sizeof(serv_addr)); 
+
+serv_addr.sin_family = AF_INET;
+if( (strcmp(query, "beli"))==0 ){
+    serv_addr.sin_port = htons(PORT_B); 
+    valid = 1;
+}
+else if( (strcmp(query, "tambah"))==0 ){
+    serv_addr.sin_port = htons(PORT_J); 
+    valid = 1;
+}
+
+
+if (!valid)
+    continue;
+	
+```
+
+  </li>
+    <li>
+    <p align="justify">
+	    Membuat koneksi ke socket dengan server sesuai query dan membaca message dari server kemudian menampilkannya ke stdout. Setelah itu, close connection dengan server agar dapat melakukan koneksi lain.
+    </p>
+    
+```c
+
+if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)  
+{ 
+    printf("\nInvalid address/ Address not supported \n"); 
+    return -1; 
+} 
+
+if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
+{ 
+    printf("\nConnection Failed \n"); 
+    return -1; 
+} 
+send(sock , query , strlen(query) , 0 );
+valread = read( sock , buffer, sizeof(buffer)); 
+printf("%s\n",buffer ); 
+close(sock);
+	
+```
+
+  </li>
+</ol>
 <br>
 
 <h3>Nomor 3</h3>
