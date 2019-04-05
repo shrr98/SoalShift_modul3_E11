@@ -23,6 +23,8 @@ void* printStock(void* x){
         shmdt(shared_mem);
         sleep(5);
     }
+
+    return NULL;
 }
 
 
@@ -42,7 +44,6 @@ int jual(char *buffer){
 }
 
 void* server(void* x){
-    printf("thread server\n");
     int server_fd, client, valread; 
     struct sockaddr_in address; 
     int opt = 1; 
@@ -93,6 +94,7 @@ void* server(void* x){
         printf("%s\n", buffer);
         printf("%s\n", respon[sukses]); 
     }
+    return NULL;
 }
 
 
