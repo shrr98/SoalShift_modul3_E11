@@ -1,10 +1,3 @@
-
-Code
-Issues 0
-Pull requests 0
-Projects 0
-Insights
-Jawaban soal shift modul3 Sistem Operasi Kelompok E11
 <h1>LAPORAN SOAL SHIFT MODUL 3</h1>
 <div>
   <h3>KELOMPOK E 11</h3>
@@ -129,21 +122,143 @@ int main(int argc, char **argv){
 <br>
 
 <h3>Nomor 2</h3>
+<h5>Server Penjual</h5>
 <ol>
   <li>
-    <p align="justify">
+    <p align="justify">Menggunakan shared memory sebagai IPC dengan server pembeli. Inisialisasi shared memory dilakukan pada fungsi main. Kemudian buat 2 thread untuk menjalankan server dan printStock secara parallel. Kemudian join thread1 dan thread2.
     </p>
     
 ```c
+
+int main(int argc, char const *argv[]) 
+{ 
+    pthread_t tid[2];
+
+    key_t key = ftok("stok",65); 
+
+    // shmget returns an identifier in shmid 
+    shmid = shmget(key,1024,0666|IPC_CREAT); 
+   
+
+    //pthread_create(&tid[1], NULL, printStock, NULL);
+    pthread_create(&tid[0], NULL, &server, NULL);
+    pthread_create(&tid[1], NULL, printStock, NULL);
+    
+    pthread_join(tid[0], NULL);
+} 
 
 ```
 
   </li>
     <li>
     <p align="justify">
+	    Membuat fungsi server untuk koneksi ke socket sebagai IPC dengan client. Setiap ada query/message dari client, panggil fungsi 'jual' untuk melakukan proses penjualan.
     </p>
     
 ```c
+
+void* server(void* x){
+    int server_fd, client, valread; 
+    struct sockaddr_in address; 
+    int opt = 1; 
+    int addrlen = sizeof(address); 
+    char buffer[8] = {0}; 
+    char *respon[] = {"transaksi gagal", "transaksi berhasil"}; 
+
+     // Creating socket file descriptor 
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
+    { 
+        perror("socket failed"); 
+        exit(EXIT_FAILURE); 
+    } 
+       
+    // Forcefully attaching socket to the port 8080 
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, 
+                                                  &opt, sizeof(opt))) 
+    { 
+        perror("setsockopt"); 
+        exit(EXIT_FAILURE); 
+    } 
+    address.sin_family = AF_INET; 
+    address.sin_addr.s_addr = INADDR_ANY; 
+    address.sin_port = htons( PORT ); 
+       
+    // Forcefully attaching socket to the port 8080 
+    if (bind(server_fd, (struct sockaddr *)&address,  
+                                 sizeof(address))<0) 
+    { 
+        perror("bind failed"); 
+        exit(EXIT_FAILURE); 
+    } 
+    while(1){
+        if (listen(server_fd, 1) < 0) 
+        { 
+            perror("listen"); 
+            exit(EXIT_FAILURE); 
+        } 
+        if ((client = accept(server_fd, (struct sockaddr *)&address,  
+                        (socklen_t*)&addrlen))<0) 
+        { 
+            perror("accept"); 
+            exit(EXIT_FAILURE); 
+        } 
+        valread = read( client , buffer, 8);
+        int sukses = jual(buffer);
+        send(client , respon[sukses] , strlen(respon[sukses]) , 0 ); 
+        printf("%s\n", buffer);
+        printf("%s\n", respon[sukses]); 
+    }
+    return NULL;
+}
+
+```
+
+  </li>
+  <li>
+    <p align="justify">
+	    Membuat fungsi jual untuk melakukan proses penjualan. jika query yang diterima adalah "tambah", maka attach ke shared memory untuk mengubah jumlah stock yang tersimpan pada shared memory.
+    </p>
+    
+```c
+
+int jual(char *buffer){
+    if( (strcmp(buffer, "tambah"))==0 ){
+        int *shared_mem = (int*) shmat(shmid,(void*)0,0); 
+
+        // change stok
+        if(shared_mem != NULL){
+            *shared_mem = (*shared_mem) +1;
+            shmdt(shared_mem); 
+            return 1;
+        }
+        else printf("shared memory gagal");
+    }
+    return 0;
+}
+
+```
+
+  </li>
+  <li>
+    <p align="justify">
+	    Membuat fungsi printStock yang akan dijalankan thread 2. Pada fungsi printStock, attach ke shared memory untuk membaca jumlah stock untuk ditampilkan pada stdout.
+    </p>
+    
+```c
+
+void* printStock(void* x){
+    int* shared_mem;
+    while(1){
+        shared_mem = (int*) shmat(shmid,(void*)0,0);
+        if(shared_mem!=NULL){
+            printf("Stok : %d\n", *shared_mem);
+        }
+        shmdt(shared_mem);
+        sleep(5);
+    }
+
+    return NULL;
+}
 
 ```
 
