@@ -215,6 +215,40 @@ system("zip -jm /home/arifdarma/Documents/FolderProses2/KompresProses2.zip /home
  system("unzip /home/arifdarma/Documents/FolderProses2/KompresProses2.zip -d /home/arifdarma/Documents/FolderProses2/");
 ```
   </li>
+   <li>
+  <p align="justify">
+  Maka threadnya akan menjalankan program berikut. Jika id=1 maka thread tid[1] dijalankan dan jika id=2 maka thread tid[2] dijalankan.
+  </p>
+
+```c
+if(pthread_equal(id,tid[0]))
+	{
+		system("mkdir /home/arifdarma/Documents/FolderProses1");
+		system("ps -aux | head > /home/arifdarma/Documents/FolderProses1/SimpanProses1.txt");
+		system("zip -jm /home/arifdarma/Documents/FolderProses1/KompresProses1.zip /home/arifdarma/Documents/FolderProses1/SimpanProses1.txt");
+		sleep(15);
+		system("unzip /home/arifdarma/Documents/FolderProses1/KompresProses1.zip -d /home/arifdarma/Documents/FolderProses1/");
+	}
+	else if(pthread_equal(id,tid[1]))
+	{
+		system("mkdir /home/arifdarma/Documents/FolderProses2");
+		system("ps -aux | head > /home/arifdarma/Documents/FolderProses2/SimpanProses2.txt");
+		system("zip -jm /home/arifdarma/Documents/FolderProses2/KompresProses2.zip /home/arifdarma/Documents/FolderProses2/SimpanProses2.txt");
+		sleep(15);
+		system("unzip /home/arifdarma/Documents/FolderProses2/KompresProses2.zip -d /home/arifdarma/Documents/FolderProses2/");
+	}
+```
+  </li>
+  <li>
+  <p align="justify">
+  Pada mainnya dilakukan pthread_join agar menunggu semua thread yang dijoin selesai terlebih dahulu agar id=1 dan id=2 bisa dijalankan bersamaan.
+  </p>
+
+```c
+pthread_join(tid[0],NULL);
+pthread_join(tid[1],NULL);
+```
+  </li>
 </ol>
 
 <br>
