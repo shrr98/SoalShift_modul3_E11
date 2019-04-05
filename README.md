@@ -125,10 +125,16 @@ int main(int argc, char **argv){
 <ol>
   <li>
     <p align="justify">
+      Buatlah sebuah program C dimana dapat menyimpan list proses yang sedang berjalan (ps -aux) maksimal 10 list proses. Maka pertama-tama buat directory tujuan yaitu /home/[user]/Documents/FolderProses1 dan /home/[user]/Documents/FolderProses2. Berarti menggunakan ps -aux yang di pipe ke head disimpan pada SimpanProses1.txt pada folder FolderProses1 dan SimpanProses2.txt pada folder FolderProses2
     </p>
     
 ```c
+system("mkdir /home/arifdarma/Documents/FolderProses1");
+system("ps -aux | head > /home/arifdarma/Documents/FolderProses1/SimpanProses1.txt");
 
+pada thread yang lain buat
+system("mkdir /home/arifdarma/Documents/FolderProses2");
+system("ps -aux | head > /home/arifdarma/Documents/FolderProses1/SimpanProses2.txt");
 ```
 
   </li>
