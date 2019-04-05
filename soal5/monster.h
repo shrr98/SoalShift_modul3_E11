@@ -72,5 +72,6 @@ class Monster {
 
         int status;
         bool isLiving;
-
+        bool isRunning;
+        string msg;
 };

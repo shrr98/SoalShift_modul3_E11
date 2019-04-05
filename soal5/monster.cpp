@@ -8,6 +8,7 @@ Monster::Monster(string nama){
         bath_isNotReady = 0;
         status = 0;
         isLiving = true;
+        isRunning = true;
 }
 
 Monster::~Monster(){
@@ -15,6 +16,9 @@ Monster::~Monster(){
     for(int i=0; i<6; i++){
         pthread_cancel(tid[i]);
     }
+
+    shmdt(marketStock);
+    cout << "monster deleted" << endl;
 }
 
 void Monster::play(){
@@ -29,13 +33,12 @@ void Monster::play(){
     pthread_create(&tid[4], NULL, &Monster::hygieneDecrease, this);
     pthread_create(&tid[5], NULL, &Monster::listenKeypress, this);
 
-    while(isLiving);
+    while(isRunning);
 }
 
 void* Monster::display(void *x){
     Monster* m = (Monster*) x;
     while(m->isLiving){
-        system("clear");
         switch(m->status){
             case STANDBY_STAT:
                 m->standby();
@@ -51,6 +54,8 @@ void* Monster::display(void *x){
         }
         sleep(1);
     }
+    system("clear");
+    cout << m->msg << "1. Exit" << endl;
 }
 
 void* Monster::regenerasi(void* x){
@@ -59,7 +64,7 @@ void* Monster::regenerasi(void* x){
        if(m->getHealth()<=0){
             // mati
             m->isLiving=false;
-            printf("Game Over:Lack of health\n"); 
+            m->msg = "Game Over:Lack of health\n"; 
         }
         else if(m->status==STANDBY_STAT){
             sleep(10);
@@ -88,7 +93,7 @@ void* Monster::kelaparan(void* x){
        if(m->getHunger()<=0){
             // mati
             m->isLiving=false;
-            printf("Game Over:Starvation\n"); 
+            m->msg = "Game Over:Starvation\n"; 
         }
         else if(m->status!=BATTLE_STAT){
             sleep(10);
@@ -103,7 +108,7 @@ void* Monster::hygieneDecrease(void* x){
        if(m->getHygiene()<=0){
             // mati
             m->isLiving=false;
-            printf("Game Over:Lack of hygiene\n"); 
+            m->msg = "Game Over:Lack of hygiene\n"; 
         }
         else if(m->status!=BATTLE_STAT){
             sleep(30);
@@ -120,7 +125,6 @@ void* Monster::listenKeypress(void *x){
     int echo =0;
 
     while(m->isLiving){
-
         tcgetattr(0, &old); /* grab old terminal i/o settings */
         new1 = old; /* make new settings same as old settings */
         new1.c_lflag &= ~ICANON; /* disable buffered i/o */
@@ -133,6 +137,14 @@ void* Monster::listenKeypress(void *x){
 
         key = getchar();
         tcsetattr(0, TCSANOW, &old);
+
+        if(!m->isLiving){
+            if(key=='1'){
+                m->isRunning=false;
+                break;
+            }
+            continue;
+        }
 
         if(m->status == STANDBY_STAT){
             switch(key){
@@ -159,7 +171,7 @@ void* Monster::listenKeypress(void *x){
                     //exit
                     system("clear");
                     printf("exit\n");
-                    m->isLiving=false;
+                    m->isRunning=false;
                     break;
                 default:
                     break;
@@ -193,6 +205,7 @@ void* Monster::listenKeypress(void *x){
 }
 
 void Monster::standby(){  
+    system("clear");
     cout << "Standby Mode" << endl;
     cout << "Health : " << health_stat << endl;
     cout << "Hunger : " << hunger_stat << endl;
@@ -204,6 +217,7 @@ void Monster::standby(){
 }
 
 void Monster::battle(){
+    system("clear");
     cout << "Battle Mode" << endl <<
     "Monster’s Health : " << health_stat << endl <<
     "Enemy’s Health : " << enemy << endl;
@@ -213,6 +227,7 @@ void Monster::battle(){
 }
 
 void Monster::shop(){
+    system("clear");
     cout << "Shop Mode" << endl <<
         "Shop food stock : " << *marketStock << endl <<
         "Your food stock : " << foodStock << endl <<
@@ -247,6 +262,7 @@ void Monster::attack(){
     enemy-=damage;
     if(enemy<=0){
         printf("YOU WIN!!!\n");
+        sleep(1);
         status = STANDBY_STAT;
         return;
     }
@@ -254,6 +270,8 @@ void Monster::attack(){
     health_stat-=damage;
     if(health_stat<=0){
         printf("YOU LOSE...\n");
+        sleep(1);
+        status = STANDBY_STAT;
         return;
     }
 }
