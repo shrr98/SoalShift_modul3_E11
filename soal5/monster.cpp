@@ -56,6 +56,7 @@ void* Monster::display(void *x){
     }
     system("clear");
     cout << m->msg << "1. Exit" << endl;
+    return NULL;
 }
 
 void* Monster::regenerasi(void* x){
@@ -71,6 +72,7 @@ void* Monster::regenerasi(void* x){
             m->addHealth(5);
         }
     }
+    return NULL;
 }
 
 void* Monster::bathCoolDown(void* x){
@@ -79,6 +81,7 @@ void* Monster::bathCoolDown(void* x){
         m->bathCooldown();
         sleep(1);
     }
+    return NULL;
 }
 
 void Monster::bathCooldown(){
@@ -100,6 +103,7 @@ void* Monster::kelaparan(void* x){
             m->addHunger(-5);
         }
     }
+    return NULL;
 }
 
 void* Monster::hygieneDecrease(void* x){
@@ -115,6 +119,7 @@ void* Monster::hygieneDecrease(void* x){
             m->addHygiene(-10);
         }
     }
+    return NULL;
 }
 
 void* Monster::listenKeypress(void *x){
