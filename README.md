@@ -762,18 +762,121 @@ pthread_join(tid[1],NULL);
 <ol>
   <li>
     <p align="justify">
+	    Membuat class Monster yang memiliki atribut:
     </p>
     
 ```c
+
+typedef int Enemy;
+typedef int* MarketStock;
+
+class Monster {
+    private:
+        string name;
+        int hygiene_stat,
+            hunger_stat,
+            health_stat,
+            foodStock;
+        const int damage = 20;
+        int bath_isNotReady;
+        Enemy enemy;
+        MarketStock marketStock;
+        
+
+        pthread_t tid[6];
+        
+        // fungsi untuk threads
+        static void* display(void*);		// dijalankan oleh thread, untuk mengatur tampilan pada stdout
+        static void* regenerasi(void*);		// dijalankan oleh thread, untuk regenerasi health_stat monster
+        static void* bathCoolDown(void*);	// dijalankna oleh thread, untuk mengatur cooldown bath
+        static void* kelaparan(void*);		// dijalankan oleh thread, untuk mengupdate hunger_stat
+        static void* hygieneDecrease(void*);	// dijalankan oleh thread, untuk mengupdate hygiene_stat
+        static void* listenKeypress(void*);	// dijalankan oleh thread, untuk listen keypress dari stdin
+        
+
+        
+
+    public:
+        Monster(string nama);
+        ~Monster();
+        void play();
+        // fungsi display
+        void standby();
+        void battle();
+        void shop();
+
+
+        void eat();
+        void bath();
+        void bathCooldown();
+
+        void attack();
+        void buy();
+
+        // setter getter
+        void addHealth(int);
+        int getHealth();
+        void addHunger(int);
+        int getHunger();
+        void addHygiene(int);
+        int getHygiene();
+
+        int status;
+        bool isLiving;
+        bool isRunning;
+        string msg;
+};
 
 ```
 
   </li>
     <li>
     <p align="justify">
+	    Pada main untuk game monster, instansiasi object monster kemudian panggil method play. Pada method play, semua thread di-create dan menunggu terminasi.
     </p>
     
 ```c
+
+int main(){
+    char name[20];
+    printf("Name > ");
+    scanf("%s", name);
+    Monster *monster = new Monster(name);
+    monster->play();
+    delete monster;
+    return 0;
+}
+
+```
+
+  </li>
+  
+  <li>
+    <p align="justify">
+	    Membuat program store (store.cpp) yang terhubung dengan game menggunakan shared memory.
+    </p>
+    
+```c
+
+int main(){
+    key_t key = ftok("food store", 65);
+    int market = shmget(key, 8, 0666 | IPC_CREAT);
+    marketStock = (int*) shmat(market, (void*)0, 0);
+    isRunning = true;
+    pthread_t tid[2];
+    
+    pthread_create(&tid[0], NULL, display, NULL);
+    pthread_create(&tid[1], NULL, listenKeypress, NULL);
+
+    while(isRunning);
+
+    pthread_cancel(tid[0]);
+    pthread_cancel(tid[1]);
+
+    shmdt(marketStock);
+    shmctl(market, IPC_RMID, NULL);
+    return 0;
+}
 
 ```
 
